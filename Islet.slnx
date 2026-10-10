@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Islet.Core/Islet.Core.csproj" />
+    <Project Path="src/Islet/Islet.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Islet.Tests/Islet.Tests.csproj" />
+  </Folder>
+</Solution>
