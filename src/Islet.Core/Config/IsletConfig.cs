@@ -14,6 +14,7 @@ public sealed class IsletConfig
     public TimingConfig Timings { get; set; } = new();
     public BehaviorConfig Behavior { get; set; } = new();
     public ColorConfig Colors { get; set; } = new();
+    public GlassConfig Glass { get; set; } = new();
 
     /// <summary>Base (content-independent) target metrics for a mode.</summary>
     public IslandMetrics BaseMetrics(IslandMode mode) => mode switch
@@ -85,4 +86,18 @@ public sealed class ColorConfig
     public string GlowDefault { get; set; } = "#5AC8FA";  // soft activity glow
     public string AskGlow { get; set; } = "#8E8CFF";      // Ask-mode border/caret glow
     public string Accent { get; set; } = "#FFFFFF";
+}
+
+/// <summary>
+/// "Liquid Glass" material for the island: a translucent smoked panel (content/desktop shows through),
+/// a specular top sheen, and an edge rim light — brighter at the top, faint reflection at the bottom.
+/// Colors are 8-digit AARRGGBB. Disable to fall back to the solid-black pill.
+/// </summary>
+public sealed class GlassConfig
+{
+    public bool Enabled { get; set; } = true;
+    public string TintTop { get; set; } = "#962E3038";    // translucent, lighter top
+    public string TintBottom { get; set; } = "#D20C0D12";  // more opaque, darker bottom (legibility + depth)
+    public double Highlight { get; set; } = 0.8;           // top specular sheen strength 0..1
+    public double Rim { get; set; } = 0.9;                 // edge rim-light strength 0..1
 }

@@ -165,6 +165,12 @@ internal sealed class IslandController
         bool quiet = m.Mode is IslandMode.Idle && !_hasCur && !_hasOut;
         m.GlowStrength = quiet ? 0.22f : (float)_cfg.Layout.GlowStrength;
 
+        m.GlassEnabled = _cfg.Glass.Enabled;
+        m.GlassTintTop = ParseArgb(_cfg.Glass.TintTop);
+        m.GlassTintBottom = ParseArgb(_cfg.Glass.TintBottom);
+        m.GlassHighlight = (float)_cfg.Glass.Highlight;
+        m.GlassRim = (float)_cfg.Glass.Rim;
+
         m.AskActive = _ask;
         m.AskText = _askText;
         m.AskGlowArgb = ParseArgb(_cfg.Colors.AskGlow);

@@ -34,14 +34,21 @@ internal sealed class IslandRenderer
             canvas.DrawPath(body, glowPaint);
         }
 
-        // --- Black body ---
-        using (var bodyPaint = new SKPaint { IsAntialias = true, Color = new SKColor(0, 0, 0, 255), Style = SKPaintStyle.Fill })
+        // --- Island body: Liquid Glass material, or solid black if disabled ---
+        var bounds = new SKRect(cx - w / 2f, cy - h / 2f, cx + w / 2f, cy + h / 2f);
+        if (m.GlassEnabled)
+        {
+            GlassMaterial.Draw(canvas, body, bounds, m);
+        }
+        else
+        {
+            using var bodyPaint = new SKPaint { IsAntialias = true, Color = new SKColor(0, 0, 0, 255), Style = SKPaintStyle.Fill };
             canvas.DrawPath(body, bodyPaint);
+        }
 
         // --- Content, clipped to the island shape ---
         int save = canvas.Save();
         canvas.ClipPath(body, SKClipOperation.Intersect, antialias: true);
-        var bounds = new SKRect(cx - w / 2f, cy - h / 2f, cx + w / 2f, cy + h / 2f);
         ContentRenderer.Draw(canvas, m, bounds);
         canvas.RestoreToCount(save);
 

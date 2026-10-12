@@ -19,6 +19,13 @@ internal sealed class RenderModel
     public float GlowRadiusPx = 20f;
     public float GlowStrength = 0.9f;
 
+    // Liquid Glass material
+    public bool GlassEnabled = true;
+    public uint GlassTintTop = 0x962E3038;
+    public uint GlassTintBottom = 0xD20C0D12;
+    public float GlassHighlight = 0.8f;
+    public float GlassRim = 0.9f;
+
     // Minimal-state detached blob (gooey). 0 = merged, 1 = fully separated.
     public float MinimalSeparation;
     public float MinimalBlobDp;
