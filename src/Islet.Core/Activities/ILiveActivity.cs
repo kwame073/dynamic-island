@@ -29,6 +29,13 @@ public sealed record ActivitySnapshot
     public byte[]? ImageBgra { get; init; }
     public int ImageW { get; init; }
     public int ImageH { get; init; }
+
+    // Media transport: when true, the expanded view shows prev / play-pause / next and a seekable bar.
+    public bool ShowTransport { get; init; }
+    public bool IsPlaying { get; init; }
+    public bool CanSeek { get; init; }
+    public bool CanNext { get; init; }
+    public bool CanPrevious { get; init; }
 }
 
 /// <summary>Services the host exposes to activities.</summary>

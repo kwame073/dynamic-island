@@ -26,6 +26,7 @@ internal sealed class IsletHost
         _win.Clicked += () => _mgr!.OnClick();
         _win.HotkeyPressed += () => _mgr!.ToggleAsk();
         _win.HoverChanged += h => { if (_cfg.Behavior.ExpandOnHover) _mgr!.OnHover(h); };
+        _win.MediaCommand += (id, f) => _mgr!.OnMediaCommand(id, f);
 
         _ask = new AskInput(_cfg, _ctl, _win, _mgr);
         _win.CharTyped += c => _ask!.OnChar(c);

@@ -10,6 +10,8 @@ internal static class Glyphs
 {
     public static readonly string Play = char.ConvertFromUtf32(0xE768);
     public static readonly string Pause = char.ConvertFromUtf32(0xE769);
+    public static readonly string Previous = char.ConvertFromUtf32(0xE892);
+    public static readonly string Next = char.ConvertFromUtf32(0xE893);
     public static readonly string Music = char.ConvertFromUtf32(0xEC4F);
     public static readonly string Search = char.ConvertFromUtf32(0xE721);
     public static readonly string Microphone = char.ConvertFromUtf32(0xE720);

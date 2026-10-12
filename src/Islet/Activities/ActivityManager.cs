@@ -24,6 +24,7 @@ internal sealed class ActivityManager : IActivityHost
     private Timer? _alertRevert;
 
     public TimerActivity Timer { get; } = new();
+    public MediaActivity Media { get; } = new();
 
     public ActivityManager(IsletConfig cfg, IslandController ctl, IslandWindow win)
     {
@@ -32,7 +33,7 @@ internal sealed class ActivityManager : IActivityHost
 
     public void Start()
     {
-        _activities.Add(new MediaActivity());
+        _activities.Add(Media);
         _activities.Add(new BatteryActivity());
         _activities.Add(new VolumeActivity());
         _activities.Add(new RecordingActivity());
@@ -103,6 +104,18 @@ internal sealed class ActivityManager : IActivityHost
         bool turningOn = !_ctl.AskActive;
         _ctl.SetAsk(turningOn);
         if (!turningOn) Recompute();
+    });
+
+    /// <summary>Route a media transport/seek click from the expanded view to the media activity.</summary>
+    public void OnMediaCommand(string id, float fraction) => _win.Post(() =>
+    {
+        switch (id)
+        {
+            case "media.playpause": Media.TogglePlayPause(); break;
+            case "media.next": Media.Next(); break;
+            case "media.prev": Media.Previous(); break;
+            case "media.seek": Media.SeekFraction(fraction); break;
+        }
     });
 
     // ---- IActivityHost ----

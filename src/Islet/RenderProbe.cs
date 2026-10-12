@@ -46,7 +46,8 @@ internal static class RenderProbe
             m.Mode = IslandMode.Expanded; m.Dp = cfg.BaseMetrics(IslandMode.Expanded);
             m.GlowArgb = 0xFF5AC8FA;
             m.Current = Layer(new ActivitySnapshot
-            { Title = "Islet Session", Subtitle = "SkiaSharp · 120 Hz", Glyph = Glyphs.Music, Visual = VisualKind.Bar, Progress = 0.42, AccentHex = "#5AC8FA" });
+            { Title = "Islet Session", Subtitle = "SkiaSharp · 120 Hz", Glyph = Glyphs.Music, Visual = VisualKind.Bar, Progress = 0.42, AccentHex = "#5AC8FA",
+              ShowTransport = true, IsPlaying = true, CanSeek = true, CanNext = true, CanPrevious = true });
         });
 
         Render(outDir, "06-ask", cfg, renderer, m =>

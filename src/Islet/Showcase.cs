@@ -33,6 +33,7 @@ internal static class Showcase
             Glyph = Glyphs.Music, CompactLeading = Glyphs.Music, CompactTrailing = Glyphs.Pause,
             Visual = VisualKind.Bar, Progress = p, AccentHex = "#FF5E3A",
             ImageBgra = art, ImageW = 128, ImageH = 128,
+            ShowTransport = true, IsPlaying = true, CanSeek = true, CanNext = true, CanPrevious = true,
         };
         var battery = new ActivitySnapshot
         {

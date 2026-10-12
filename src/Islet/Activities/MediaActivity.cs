@@ -28,6 +28,7 @@ internal sealed class MediaActivity : ILiveActivity
     private string _title = "", _artist = "", _source = "";
     private string _attachedId = "";
     private bool _playing;
+    private bool _canNext, _canPrev, _canSeek;
     private double _posSec, _endSec;
     private long _updateTicks;
     private byte[]? _artBgra; private int _artW, _artH;
@@ -136,9 +137,34 @@ internal sealed class MediaActivity : ILiveActivity
 
     private void OnPlayback(SmtcSession s, PlaybackInfoChangedEventArgs e)
     {
-        try { _playing = s.GetPlaybackInfo()?.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing; }
+        try
+        {
+            var pi = s.GetPlaybackInfo();
+            _playing = pi?.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+            var ctl = pi?.Controls;
+            _canNext = ctl?.IsNextEnabled ?? false;
+            _canPrev = ctl?.IsPreviousEnabled ?? false;
+            _canSeek = ctl?.IsPlaybackPositionEnabled ?? false;
+        }
         catch { }
         Changed?.Invoke();
+    }
+
+    // --- Transport controls (routed from clicks on the expanded view) ---
+    public void TogglePlayPause() { var s = _session; if (s == null) return; try { _ = s.TryTogglePlayPauseAsync(); } catch { } }
+    public void Next() { var s = _session; if (s == null) return; try { _ = s.TrySkipNextAsync(); } catch { } }
+    public void Previous() { var s = _session; if (s == null) return; try { _ = s.TrySkipPreviousAsync(); } catch { } }
+
+    public void SeekFraction(double f)
+    {
+        var s = _session;
+        if (s == null || _endSec <= 0.5) return;
+        try
+        {
+            long ticks = (long)(Math.Clamp(f, 0, 1) * _endSec * 10_000_000.0);
+            _ = s.TryChangePlaybackPositionAsync(ticks);
+        }
+        catch { }
     }
 
     private void OnTimeline(SmtcSession s, TimelinePropertiesChangedEventArgs e)
@@ -233,6 +259,11 @@ internal sealed class MediaActivity : ILiveActivity
             ImageBgra = _artBgra,
             ImageW = _artW,
             ImageH = _artH,
+            ShowTransport = true,
+            IsPlaying = _playing,
+            CanSeek = _canSeek,
+            CanNext = _canNext,
+            CanPrevious = _canPrev,
         };
     }
 }

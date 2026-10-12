@@ -9,6 +9,7 @@ internal sealed class IslandRenderer
     public void Draw(SKCanvas canvas, RenderModel m)
     {
         canvas.Clear(SKColors.Transparent);
+        m.HitZones.Clear();
 
         float w = (float)m.Dp.Width * m.Scale;
         float h = (float)m.Dp.Height * m.Scale;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Islet.Core;
@@ -36,6 +37,7 @@ internal sealed class IslandWindow
     // Last rendered island geometry in surface pixels (for hit-testing).
     private float _hitCx, _hitCy, _hitW, _hitH, _hitR;
     private bool _hovering;
+    private RenderModel? _model;
 
     private const int HOTKEY_ID = 0xA11;
 
@@ -44,6 +46,7 @@ internal sealed class IslandWindow
     public event Action<bool>? HoverChanged;
     public event Action<char>? CharTyped;
     public event Action<int>? KeyPressed; // virtual-key code
+    public event Action<string, float>? MediaCommand; // (zone id, seek fraction)
 
     public IslandWindow(IsletConfig cfg, IslandController ctl)
     {
@@ -170,6 +173,7 @@ internal sealed class IslandWindow
         _hitR = (float)model.Dp.CornerRadius * s;
         _hitCx = _surfW / 2f;
         _hitCy = model.AnchorTopPx + _hitH / 2f;
+        _model = model;
     }
 
     private void PollHover()
@@ -238,8 +242,25 @@ internal sealed class IslandWindow
                 return (IntPtr)(inside ? HTCLIENT : HTTRANSPARENT);
             }
             case WM_LBUTTONUP:
+            {
+                float lx = LoWord(lParam), ly = HiWord(lParam); // client coords == surface pixels
+                var zones = _model?.HitZones;
+                if (zones != null)
+                {
+                    for (int i = zones.Count - 1; i >= 0; i--) // last drawn = topmost
+                    {
+                        var z = zones[i];
+                        if (z.Contains(lx, ly))
+                        {
+                            float frac = z.Id == "media.seek" && z.R > z.L ? (lx - z.L) / (z.R - z.L) : 0f;
+                            MediaCommand?.Invoke(z.Id, frac);
+                            return IntPtr.Zero;
+                        }
+                    }
+                }
                 Clicked?.Invoke();
                 return IntPtr.Zero;
+            }
             case WM_HOTKEY:
                 HotkeyPressed?.Invoke();
                 return IntPtr.Zero;

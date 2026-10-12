@@ -13,12 +13,12 @@ internal static class ContentRenderer
         var layer = m.Current;
         // Fade/scale the outgoing content out first (blur + scale-down + fade).
         if (m.Outgoing is { } outg && outg.Alpha > 0.01f)
-            DrawLayer(canvas, m, bounds, outg);
+            DrawLayer(canvas, m, bounds, outg, interactive: false);
         if (layer is { } cur && cur.Alpha > 0.01f)
-            DrawLayer(canvas, m, bounds, cur);
+            DrawLayer(canvas, m, bounds, cur, interactive: true);
     }
 
-    private static void DrawLayer(SKCanvas canvas, RenderModel m, SKRect bounds, ContentLayer layer)
+    private static void DrawLayer(SKCanvas canvas, RenderModel m, SKRect bounds, ContentLayer layer, bool interactive)
     {
         int save = canvas.Save();
         // Scale transforms content about the island center for the blur/scale transition.
@@ -30,8 +30,8 @@ internal static class ContentRenderer
         {
             case IslandMode.Compact: DrawCompact(canvas, m, bounds, snap, a); break;
             case IslandMode.Minimal: DrawMinimal(canvas, m, bounds, snap, a); break;
-            case IslandMode.Expanded: DrawExpanded(canvas, m, bounds, snap, a); break;
-            case IslandMode.Alert: DrawExpanded(canvas, m, bounds, snap, a); break;
+            case IslandMode.Expanded: DrawExpanded(canvas, m, bounds, snap, a, interactive); break;
+            case IslandMode.Alert: DrawExpanded(canvas, m, bounds, snap, a, false); break;
             default: break; // Idle: empty
         }
         canvas.RestoreToCount(save);
@@ -101,7 +101,7 @@ internal static class ContentRenderer
         c.DrawPath(path, arc);
     }
 
-    private static void DrawExpanded(SKCanvas c, RenderModel m, SKRect b, ActivitySnapshot s, byte a)
+    private static void DrawExpanded(SKCanvas c, RenderModel m, SKRect b, ActivitySnapshot s, byte a, bool interactive)
     {
         float sc = m.Scale;
         float pad = 18 * sc;
@@ -127,6 +127,12 @@ internal static class ContentRenderer
         if (!string.IsNullOrEmpty(s.Subtitle))
             DrawText(c, s.Subtitle, tx, b.Top + pad + titleSize + subSize + 6 * sc, subSize, dim);
 
+        if (s.ShowTransport)
+        {
+            DrawTransport(c, m, b, s, a, sc, accent, white, interactive);
+            return;
+        }
+
         if (s.Visual == VisualKind.Bar && s.Progress is double p)
         {
             float barY = b.Bottom - pad - 6 * sc;
@@ -135,6 +141,41 @@ internal static class ContentRenderer
         else if (s.Visual == VisualKind.Equalizer && s.Levels is { Length: > 0 })
         {
             DrawEqualizer(c, s.Levels, new SKRect(tx, b.Bottom - pad - 22 * sc, b.Right - pad, b.Bottom - pad), accent);
+        }
+    }
+
+    private static void DrawTransport(SKCanvas c, RenderModel m, SKRect b, ActivitySnapshot s, byte a, float sc, SKColor accent, SKColor white, bool interactive)
+    {
+        float pad = 18 * sc;
+        float cx = b.MidX;
+        float by = b.Bottom - pad - 10 * sc;   // seek bar
+        float ty = by - 34 * sc;               // transport row center
+        float gap = 48 * sc;
+
+        var prevCol = s.CanPrevious ? accent : accent.WithAlpha((byte)(a * 0.28f));
+        var nextCol = s.CanNext ? accent : accent.WithAlpha((byte)(a * 0.28f));
+        DrawGlyph(c, Glyphs.Previous, cx - gap, ty, 22 * sc, prevCol);
+        DrawGlyph(c, s.IsPlaying ? Glyphs.Pause : Glyphs.Play, cx, ty, 30 * sc, accent);
+        DrawGlyph(c, Glyphs.Next, cx + gap, ty, 22 * sc, nextCol);
+
+        float x0 = b.Left + pad, x1 = b.Right - pad;
+        float frac = IslandRenderer.Clamp01((float)(s.Progress ?? 0));
+        float xk = x0 + (x1 - x0) * frac;
+        using (var track = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = 4 * sc, StrokeCap = SKStrokeCap.Round, Color = white.WithAlpha((byte)(a * 0.22f)) })
+            c.DrawLine(x0, by, x1, by, track);
+        if (xk > x0 + 0.5f)
+            using (var fill = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = 4 * sc, StrokeCap = SKStrokeCap.Round, Color = accent })
+                c.DrawLine(x0, by, xk, by, fill);
+        using (var knob = new SKPaint { IsAntialias = true, Color = white })
+            c.DrawCircle(xk, by, 6 * sc, knob);
+
+        if (interactive)
+        {
+            float r = 22 * sc;
+            m.HitZones.Add(new HitZone(cx - gap - r, ty - r, cx - gap + r, ty + r, "media.prev"));
+            m.HitZones.Add(new HitZone(cx - r, ty - r, cx + r, ty + r, "media.playpause"));
+            m.HitZones.Add(new HitZone(cx + gap - r, ty - r, cx + gap + r, ty + r, "media.next"));
+            m.HitZones.Add(new HitZone(x0, by - 14 * sc, x1, by + 14 * sc, "media.seek"));
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Islet.Core;
 
 namespace Islet.Rendering;
@@ -42,6 +43,15 @@ internal sealed class RenderModel
     // Content transition (old -> new) 0..1
     public ContentLayer? Current;
     public ContentLayer? Outgoing;
+
+    // Interactive hit zones in surface pixels (buttons, seek bar), rebuilt each frame.
+    public List<HitZone> HitZones { get; } = new();
+}
+
+/// <summary>A clickable region in surface-pixel space, identified by <see cref="Id"/>.</summary>
+internal readonly record struct HitZone(float L, float T, float R, float B, string Id)
+{
+    public bool Contains(float x, float y) => x >= L && x <= R && y >= T && y <= B;
 }
 
 /// <summary>A content snapshot plus its animated transition transform (blur/scale/fade).</summary>
